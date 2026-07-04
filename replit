@@ -1,0 +1,14 @@
+language = "python3"
+run = "python main.py"
+
+[packager]
+afterInstall = "pip install -r requirements.txt"
+
+[deployment]
+run = ["sh", "-c", "python main.py"]
+
+[nix]
+channel = "stable-23_05"
+
+[env]
+PORT = "5000"
