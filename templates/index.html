@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Full Site Extractor - استخراج كامل للمواقع</title>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --card: #13131a;
+            --border: #1e1e2e;
+            --primary: #7c3aed;
+            --primary-glow: #a78bfa;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --text: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            background-image:
+                radial-gradient(ellipse at 20% 50%, rgba(124, 58, 237, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(245, 158, 11, 0.06) 0%, transparent 50%);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            font-size: 64px;
+            margin-bottom: 16px;
+            display: block;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .title {
+            font-size: 2.2em;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary-glow), var(--primary), #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.05em;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 30px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text);
+            font-size: 0.95em;
+        }
+
+        .url-input {
+            width: 100%;
+            padding: 14px 18px;
+            background: var(--bg);
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-size: 16px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            transition: all 0.3s;
+            direction: ltr;
+        }
+
+        .url-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.2);
+        }
+
+        .url-input::placeholder {
+            color: #4a4a5e;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            user-select: none;
+        }
+
+        .option-item:hover {
+            border-color: var(--primary);
+            background: rgba(124, 58, 237, 0.05);
+        }
+
+        .option-item input[type="checkbox"] {
+            accent-color: var(--primary);
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .option-item label {
+            cursor: pointer;
+            font-size: 0.9em;
+            color: var(--text);
+            margin: 0;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary), #6d28d9);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 1.1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(124, 58, 237, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .btn.loading .btn-text {
+            display: none;
+        }
+        .btn.loading .spinner {
+            display: inline-block;
+        }
+
+        .progress-section {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .progress-phase {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        .progress-pct {
+            color: var(--primary-glow);
+            font-weight: 700;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--primary-glow));
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 3px;
+        }
+
+        .result-section {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: 800;
+            color: var(--primary-glow);
+        }
+
+        .stat-label {
+            font-size: 0.75em;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .success-card {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .error-card {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .download-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: var(--success);
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: var(--radius);
+            font-weight: 700;
+            font-size: 1.05em;
+            transition: all 0.3s;
+        }
+
+        .download-btn:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+        }
+
+        .files-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.85em;
+        }
+
+        .files-table th {
+            text-align: right;
+            padding: 10px;
+            background: var(--bg);
+            color: var(--text-secondary);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .files-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        .files-table tr:hover td {
+            background: rgba(124, 58, 237, 0.05);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.75em;
+            font-weight: 600;
+        }
+        .badge-env {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+        }
+        .badge-config {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+        }
+        .badge-git {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+        .badge-database {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+        }
+        .badge-backup {
+            background: rgba(168, 85, 247, 0.2);
+            color: #c084fc;
+        }
+
+        .warning-box {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: var(--radius);
+            padding: 15px;
+            margin-top: 20px;
+            color: #fbbf24;
+            font-size: 0.85em;
+            text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px 12px;
+            }
+            .title {
+                font-size: 1.5em;
+            }
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <span class="logo">🔍</span>
+            <h1 class="title">Full Site Extractor</h1>
+            <p class="subtitle">استخراج كامل لجميع ملفات الموقع - الواجهة والخادم</p>
+        </div>
+
+        <div class="card">
+            <div class="input-group">
+                <label>🔗 رابط الموقع المستهدف</label>
+                <input type="text" id="urlInput" class="url-input" placeholder="https://target.com" value="">
+            </div>
+
+            <div class="options-grid">
+                <div class="option-item" onclick="toggleOption('frontend')">
+                    <input type="checkbox" id="opt-frontend" checked>
+                    <label>🎨 استخراج الواجهة</label>
+                </div>
+                <div class="option-item" onclick="toggleOption('git')">
+                    <input type="checkbox" id="opt-git" checked>
+                    <label>📦 استخراج Git</label>
+                </div>
+                <div class="option-item" onclick="toggleOption('backend')">
+                    <input type="checkbox" id="opt-backend" checked>
+                    <label>⚙️ فحص الخادم</label>
+                </div>
+            </div>
+
+            <button class="btn" id="extractBtn" onclick="startExtraction()">
+                <span class="btn-text">🚀 بدء الاستخراج الشامل</span>
+                <div class="spinner"></div>
+            </button>
+
+            <div class="progress-section" id="progressSection">
+                <div class="progress-header">
+                    <span class="progress-phase" id="progressPhase">جاري التهيئة...</span>
+                    <span class="progress-pct" id="progressPct">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="result-section" id="resultSection"></div>
+
+        <div class="warning-box">
+            ⚠️ <strong>تنبيه:</strong> هذه الأداة للأغراض التعليمية والأمنية فقط. استخدمها فقط على مواقعك الخاصة أو بإذن صريح. اختراق المواقع بدون إذن جريمة يعاقب عليها القانون.
+        </div>
+    </div>
+
+    <script>
+        function toggleOption(id) {
+            const cb = document.getElementById('opt-' + id);
+            cb.checked = !cb.checked;
+        }
+
+        let pollingInterval = null;
+
+        async function startExtraction() {
+            const url = document.getElementById('urlInput').value.trim();
+            if (!url) {
+                alert('الرجاء إدخال رابط الموقع');
+                return;
+            }
+
+            const options = {
+                frontend: document.getElementById('opt-frontend').checked,
+                git: document.getElementById('opt-git').checked,
+                backend: document.getElementById('opt-backend').checked,
+            };
+
+            const btn = document.getElementById('extractBtn');
+            const progressSection = document.getElementById('progressSection');
+            const resultSection = document.getElementById('resultSection');
+
+            btn.classList.add('loading');
+            btn.disabled = true;
+            progressSection.style.display = 'block';
+            resultSection.style.display = 'none';
+            document.getElementById('progressFill').style.width = '0%';
+            document.getElementById('progressPct').textContent = '0%';
+            document.getElementById('progressPhase').textContent = 'جاري بدء الاستخراج...';
+
+            try {
+                const resp = await fetch('/api/extract', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: url, ...options })
+                });
+
+                const data = await resp.json();
+
+                if (!data.success) {
+                    showError(data.error || 'فشل بدء الاستخراج');
+                    return;
+                }
+
+                const taskId = data.task_id;
+                pollStatus(taskId);
+
+            } catch (err) {
+                showError('خطأ في الاتصال بالخادم: ' + err.message);
+            }
+        }
+
+        function pollStatus(taskId) {
+            if (pollingInterval) clearInterval(pollingInterval);
+
+            pollingInterval = setInterval(async () => {
+                try {
+                    const resp = await fetch('/api/status/' + taskId);
+                    const data = await resp.json();
+
+                    document.getElementById('progressPct').textContent = data.progress + '%';
+                    document.getElementById('progressFill').style.width = data.progress + '%';
+                    document.getElementById('progressPhase').textContent = data.phase || 'جاري العمل...';
+
+                    if (data.status === 'complete') {
+                        clearInterval(pollingInterval);
+                        pollingInterval = null;
+                        showResult(taskId);
+                    }
+
+                    if (data.status === 'error') {
+                        clearInterval(pollingInterval);
+                        pollingInterval = null;
+                        showError(data.error || 'حدث خطأ أثناء الاستخراج');
+                    }
+                } catch (err) {
+                    clearInterval(pollingInterval);
+                    pollingInterval = null;
+                    showError('انقطع الاتصال بالخادم');
+                }
+            }, 1000);
+        }
+
+        async function showResult(taskId) {
+            const btn = document.getElementById('extractBtn');
+            const resultSection = document.getElementById('resultSection');
+
+            btn.classList.remove('loading');
+            btn.disabled = false;
+
+            try {
+                const resp = await fetch('/api/result/' + taskId);
+                const data = await resp.json();
+
+                let html = '<div class="success-card">';
+                html += '<h3 style="margin-bottom:10px;">✅ تم الاستخراج بنجاح!</h3>';
+                html += '<p style="color:#94a3b8;">تم العثور على <strong>' + data.files_count + '</strong> ملف</p>';
+                html += '</div>';
+
+                if (data.stats) {
+                    html += '<div class="stats-grid">';
+                    html += '<div class="stat-card"><div class="stat-value">' + data.files_count + '</div><div class="stat-label">ملف مستخرج</div></div>';
+                    html += '<div class="stat-card"><div class="stat-value">' + (data.stats.total_size_mb || 0) + ' MB</div><div class="stat-label">الحجم الإجمالي</div></div>';
+                    html += '<div class="stat-card"><div class="stat-value">' + Object.keys(data.stats.by_type || {}).length + '</div><div class="stat-label">نوع مختلف</div></div>';
+                    html += '<div class="stat-card"><div class="stat-value">' + Object.keys(data.stats.by_method || {}).length + '</div><div class="stat-label">طريقة استخراج</div></div>';
+                    html += '</div>';
+                }
+
+                html += '<a href="' + data.download_url + '" class="download-btn" download>📥 تحميل كل الملفات (ZIP)</a>';
+
+                resultSection.innerHTML = html;
+                resultSection.style.display = 'block';
+
+            } catch (err) {
+                showError('خطأ في جلب النتائج');
+            }
+        }
+
+        function showError(msg) {
+            const btn = document.getElementById('extractBtn');
+            const resultSection = document.getElementById('resultSection');
+
+            btn.classList.remove('loading');
+            btn.disabled = false;
+
+            resultSection.innerHTML = '<div class="error-card"><h3 style="margin-bottom:10px;">❌ خطأ</h3><p>' + msg + '</p></div>';
+            resultSection.style.display = 'block';
+        }
+
+        document.getElementById('urlInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') startExtraction();
+        });
+    </script>
+</body>
+</html>
